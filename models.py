@@ -33,10 +33,12 @@ class User(Base):
 def show_info_about_id(vk_id: int) -> str:
     session = _make_session()
     query = session.query(User).filter_by(vk_id=vk_id)
+    pretty_result = ''
     for info in query:
-        print(info.first_name, info.last_name, info.mobile, info.datetime)
+        pretty_result += '{} {} {} {} \n'.format(info.first_name, info.last_name, info.mobile, info.datetime)
+        # print(info.first_name, info.last_name, info.mobile, info.datetime)
 
-    return 'str'
+    return pretty_result
 
 
 def _make_session():
