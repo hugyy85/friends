@@ -31,9 +31,9 @@ class User(Base):
         self.vk_id = vk_id
 
 
-def show_info_about_id(vk_id: int) -> str:
+def show_info_about_id(vk_id: int, limit=50) -> str:
     session = _make_session()
-    query = session.query(User).filter_by(vk_id=vk_id).order_by(desc(User.id))
+    query = session.query(User).filter_by(vk_id=vk_id).order_by(desc(User.id))[:limit]
     pretty_result = ''
     for info in query:
         pretty_result += '<p>{} {} {} {} \n</p>'.format(info.first_name, info.last_name, info.mobile, info.datetime)
