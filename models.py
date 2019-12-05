@@ -2,6 +2,7 @@ from sqlalchemy import create_engine
 from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy import desc
 
 import sys
 
@@ -32,7 +33,7 @@ class User(Base):
 
 def show_info_about_id(vk_id: int) -> str:
     session = _make_session()
-    query = session.query(User).filter_by(vk_id=vk_id)
+    query = session.query(User).filter_by(vk_id=vk_id).order_by(desc(User.id))
     pretty_result = ''
     for info in query:
         pretty_result += '<p>{} {} {} {} \n</p>'.format(info.first_name, info.last_name, info.mobile, info.datetime)
