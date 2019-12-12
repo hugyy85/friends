@@ -36,7 +36,7 @@ def show_info_about_id(vk_id: int, limit=50) -> str:
     query = session.query(User).filter_by(vk_id=vk_id).order_by(desc(User.id))[:limit]
     pretty_result = ''
     for info in query:
-        pretty_result += '<p>{} {} {} {} \n</p>'.format(info.first_name, info.last_name, info.mobile, info.datetime)
+        pretty_result += '<p>mobile: {}, time: {} \n</p>'.format(info.mobile, info.datetime)
         # print(info.first_name, info.last_name, info.mobile, info.datetime)
 
     return pretty_result
