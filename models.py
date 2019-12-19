@@ -41,7 +41,7 @@ def show_info_about_id(vk_id: int, limit=50) -> str:
     return pretty_result
 
 
-def show_how_long_in_online(limit=50) -> str:
+def how_long_in_online(limit=50) -> str:
     # select *, count(*) from vk_mobile group by vk_id order by count(*);
     session = _make_session()
     query = session.query(User.first_name, User.last_name, func.count()).group_by(User.vk_id).\
