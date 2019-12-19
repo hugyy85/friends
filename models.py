@@ -1,5 +1,5 @@
 from sqlalchemy import create_engine
-from sqlalchemy import Column, Integer, String, Boolean
+from sqlalchemy import Column, Integer, String, Boolean, func, distinct
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import desc
@@ -38,6 +38,17 @@ def show_info_about_id(vk_id: int, limit=50) -> str:
     for info in query:
         pretty_result += '<p>mobile: {}, time: {} \n</p>'.format(info.mobile, info.datetime)
         # print(info.first_name, info.last_name, info.mobile, info.datetime)
+    return pretty_result
+
+
+def show_how_long_in_online(limit=50) -> str:
+    # select *, count(*) from vk_mobile group by vk_id order by count(*);
+    session = _make_session()
+    query = session.query(User.first_name, User.last_name, func.count()).group_by(User.vk_id).\
+        order_by(func.count(distinct(User.vk_id)))[:limit]
+    pretty_result = ''
+    for friend in query:
+        pretty_result += '<p>{} {}: {} min </p>'.format(friend[0], friend[1], friend[2])
 
     return pretty_result
 
@@ -55,6 +66,7 @@ def add_data_to_db(data: list) -> None:
 
 if __name__ == '__main__':
     # Base.metadata.create_all(engine)
+
     if len(sys.argv) > 1:
         for param in sys.argv[1:]:
             show_info_about_id(param)
