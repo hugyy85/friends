@@ -1,5 +1,5 @@
 from sqlalchemy import create_engine
-from sqlalchemy import Column, Integer, String, Boolean, func, distinct
+from sqlalchemy import Column, Integer, String, Boolean, func
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import desc
@@ -45,7 +45,7 @@ def how_long_in_online(limit=50) -> str:
     # select *, count(*) from vk_mobile group by vk_id order by count(*);
     session = _make_session()
     query = session.query(User.first_name, User.last_name, func.count()).group_by(User.vk_id).\
-        order_by(func.count(distinct(User.vk_id)))[:limit]
+        order_by(func.count().desc())[:limit]
     pretty_result = ''
     for friend in query:
         pretty_result += '<p>{} {}: {} min </p>'.format(friend[0], friend[1], friend[2])
