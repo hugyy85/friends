@@ -3,6 +3,9 @@ from sqlalchemy import Column, Integer, String, Boolean, func
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import desc
+import datetime
+
+from config import START_DATE
 
 import sys
 
@@ -31,13 +34,14 @@ class User(Base):
         self.vk_id = vk_id
 
 
-def show_info_about_id(vk_id: int, limit=50) -> str:
+def last_time_in_online(vk_name: str, limit=50) -> str:
+    from connection import VkApiUse
+    vk_id = VkApiUse().uid_to_id(vk_name)
     session = _make_session()
     query = session.query(User).filter_by(vk_id=vk_id).order_by(desc(User.id))[:limit]
     pretty_result = ''
     for info in query:
         pretty_result += '<p>mobile: {}, time: {} \n</p>'.format(info.mobile, info.datetime)
-        # print(info.first_name, info.last_name, info.mobile, info.datetime)
     return pretty_result
 
 
@@ -46,9 +50,14 @@ def how_long_in_online(limit=50) -> str:
     session = _make_session()
     query = session.query(User.first_name, User.last_name, func.count()).group_by(User.vk_id).\
         order_by(func.count().desc())[:limit]
+
     pretty_result = ''
+    delta_days = (datetime.datetime.now() - START_DATE).days
     for friend in query:
-        pretty_result += '<p>{} {}: {} min </p>'.format(friend[0], friend[1], friend[2])
+        minutes = friend[2]
+        hours = round(minutes / 60, 1)
+        pretty_result += '<p>{} {}: {} минут - {} часов - {} часов в день(c {}) </p>'.\
+            format(friend[0], friend[1], minutes, hours, hours/delta_days, START_DATE)
 
     return pretty_result
 
@@ -64,9 +73,8 @@ def add_data_to_db(data: list) -> None:
     session.commit()
 
 
-if __name__ == '__main__':
-    # Base.metadata.create_all(engine)
+def create_db():
+    Base.metadata.create_all(engine)
+    print('Database has created')
+    return True
 
-    if len(sys.argv) > 1:
-        for param in sys.argv[1:]:
-            show_info_about_id(param)
