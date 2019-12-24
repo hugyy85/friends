@@ -14,5 +14,10 @@ def show_how_long_in_online(limit):
     return how_long_in_online(limit)
 
 
+@app.route('/show_history/friend_time/<vk_name>')
+def show_friend_time(vk_name):
+    return how_long_in_online(uid=vk_name)
+
+
 if __name__ == '__main__':
     app.run()

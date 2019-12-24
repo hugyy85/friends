@@ -35,8 +35,7 @@ class User(Base):
 
 
 def last_time_in_online(vk_name: str, limit=50) -> str:
-    from connection import VkApiUse
-    vk_id = VkApiUse().uid_to_id(vk_name)
+    vk_id = _uid_to_id(vk_name)
     session = _make_session()
     query = session.query(User).filter_by(vk_id=vk_id).order_by(desc(User.id))[:limit]
     pretty_result = ''
@@ -45,11 +44,16 @@ def last_time_in_online(vk_name: str, limit=50) -> str:
     return pretty_result
 
 
-def how_long_in_online(limit=50) -> str:
-    # select *, count(*) from vk_mobile group by vk_id order by count(*);
+def how_long_in_online(limit=50, uid=None) -> str:
     session = _make_session()
-    query = session.query(User.first_name, User.last_name, func.count()).group_by(User.vk_id).\
-        order_by(func.count().desc())[:limit]
+    if uid:
+        vk_id = _uid_to_id(uid)
+        # select first_name, last_name, count(*) from vk_mobile where vk_id = vk_id
+        query = session.query(User.first_name, User.last_name, func.count()).filter_by(vk_id=vk_id)
+    else:
+        # select first_name, last_name, count(*) from vk_mobile group by vk_id order by count(*);
+        query = session.query(User.first_name, User.last_name, func.count()).group_by(User.vk_id).\
+            order_by(func.count().desc())[:limit]
 
     pretty_result = ''
     delta_days = (datetime.datetime.now() - START_DATE).days
@@ -57,7 +61,7 @@ def how_long_in_online(limit=50) -> str:
         minutes = friend[2]
         hours = round(minutes / 60, 1)
         pretty_result += '<p>{} {}: {} минут - {} часов - {} часов в день(c {}) </p>'.\
-            format(friend[0], friend[1], minutes, hours, hours/delta_days, START_DATE)
+            format(friend[0], friend[1], minutes, hours, round(hours/delta_days, 1), START_DATE)
 
     return pretty_result
 
@@ -65,6 +69,11 @@ def how_long_in_online(limit=50) -> str:
 def _make_session():
     Session = sessionmaker(bind=engine)
     return Session()
+
+
+def _uid_to_id(vk_uid):
+    from connection import VkApiUse
+    return VkApiUse().uid_to_id(vk_uid)
 
 
 def add_data_to_db(data: list) -> None:
@@ -77,4 +86,3 @@ def create_db():
     Base.metadata.create_all(engine)
     print('Database has created')
     return True
-
